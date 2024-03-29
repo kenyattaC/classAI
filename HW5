@@ -1,0 +1,56 @@
+install.packages("GA")
+library(GA)
+
+f1 <- function(x) 2*x[3]*x[1] + x[4]*(x[2]-2*x[3])  # Cross-section area
+f2 <- function(x) 60000*x[1]*(x[2]-2*x[3])**4/(3*x[3]*(x[2]-2*x[3])**2 + 2*x[1]*x[2]**2)  # Static deflection
+
+fitness <- function(x) {
+  a <- 0.5  # Weight for f1
+  b <- 0.5  # Weight for f2
+    return(a*f1(x) + b*f2(x))
+}
+
+constraint <- function(x) {
+  c1 <- x[1] >= 0.9 && x[1] <= 5.0
+  c2 <- x[2] >= 0.9 && x[2] <= 5.0
+  c3 <- x[3] >= 10 && x[3] <= 80
+  c4 <- x[4] >= 10 && x[4] <= 50
+    return(c1 && c2 && c3 && c4)
+}
+
+ga_params <- ga(
+  type = "real-valued",
+  fitness = fitness,
+  constraints = constraint,
+    lower = c(0.9, 0.9, 10, 10),
+    upper = c(5.0, 5.0, 80, 50),
+    popSize = 50,
+    maxiter = 100,
+    run = 100,
+    pmut = 0.001,
+    pcross = 0.75
+)
+
+ga_result <- ga(
+  type = "real-valued",
+  fitness = fitness,
+  constraints = constraint,
+    lower = c(0.9, 0.9, 10, 10),
+    upper = c(5.0, 5.0, 80, 50),
+    popSize = 50,
+    maxiter = 100,
+    run = 100,
+    pmut = 0.001,
+    pcross = 0.75,
+    monitor = TRUE
+)
+
+# Cross-section area
+plot(ga_result$best, type = "l", xlab = "Generation No.", ylab = "Best Particle Fitness", main = "Cross Section Area")
+plot(ga_result$mean, type = "l", xlab = "Generation No.", ylab = "Avg. Population Fitness", main = "Cross Section Area")
+
+# Static deflection
+plot(ga_result$best, type = "l", xlab = "Generation No.", ylab = "Best Particle Fitness", main = "Static Deflection")
+plot(ga_result$mean, type = "l", xlab = "Generation No.", ylab = "Avg. Population Fitness", main = "Static Deflection")
+
+print(ga_result$solution)
